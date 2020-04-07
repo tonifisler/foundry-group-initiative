@@ -1,0 +1,5 @@
+{
+  "COMBAT.groupRollsInitiative": "lance l'initiative du groupe!",
+  "COMBAT.RollGroupInitiative": "Lancer l'initiative par groupe",
+  "COMBAT.RollGroupInitiativeHint": "Faire un seul jet d'initiative par groupe de créatures identiques (le même acteur)."
+}

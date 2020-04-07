@@ -1,0 +1,22 @@
+{
+  "name": "group-initiative",
+  "title": "Group Initiative",
+  "description": "Roll group initiative from the Combat tracker.",
+  "author": "thorni",
+  "version": "1.0.0",
+  "minimumCoreVersion": "0.5.3",
+  "scripts": [],
+  "esmodules": ["group-initiative.js"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    },
+    {
+      "lang": "fr",
+      "name": "French",
+      "path": "lang/fr.json"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "group-initiative",
+  "version": "1.0.0",
+  "description": "Roll group initiative from the combat tracker in Foundry VTT",
+  "main": "scripts/initiative.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "group-initiative"
+  },
+  "author": "tonifisler",
+  "license": "ISC",
+  "devDependencies": {
+    "foundry-pc-types": "gitlab:foundry-projects/foundry-pc/foundry-pc-types"
+  }
+}
