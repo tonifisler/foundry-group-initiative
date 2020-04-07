@@ -6,15 +6,18 @@ const SETTING_NAME = 'rollGroupInitiative';
 async function rollGroupInitiative() {
   const currentId = this.combatant._id;
 
+  const npcs = this.turns.filter(t => (!t.actor || !t.players.length) && !t.initiative);
+
   // Check if setting is active
   const setting = game.settings.get(MODULE_NAME, SETTING_NAME);
-  if (!setting) {
+
+  if (!setting || !npcs.length) {
     this.rollNPC();
     return;
   }
 
   // Split the combatants in groups based on actor id.
-  const groups = this.combatants.reduce((g, combatant) => ({
+  const groups = npcs.reduce((g, combatant) => ({
     ...g,
     [combatant.actor.id]: (g[combatant.actor.id] || []).concat(combatant._id)
   }), {});
@@ -26,7 +29,7 @@ async function rollGroupInitiative() {
   const messageOptions = {};
 
   // START CLONE
-  // CLONED FROM DND5E ROLLINITIATIVE METHOD
+  // CLONED FROM FOUNDRY ROLLINITIATIVE METHOD
   // Iterate over Combatants, performing an initiative roll for each
   const [updates, messages] = ids.reduce((results, id, i) => {
     let [updates, messages] = results;
