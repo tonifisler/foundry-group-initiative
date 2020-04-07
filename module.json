@@ -2,7 +2,7 @@
   "name": "group-initiative",
   "title": "Group Initiative",
   "description": "Roll group initiative from the Combat tracker.",
-  "author": "Toni Fisler - thorni#4664",
+  "author": "thorni",
   "version": "1.0.0",
   "minimumCoreVersion": "0.5.3",
   "scripts": [],
