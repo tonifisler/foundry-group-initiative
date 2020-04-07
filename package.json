@@ -1,6 +1,6 @@
 {
   "name": "group-initiative",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Roll group initiative from the combat tracker in Foundry VTT",
   "main": "scripts/initiative.js",
   "scripts": {

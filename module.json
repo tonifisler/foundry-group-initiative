@@ -3,7 +3,7 @@
   "title": "Group Initiative",
   "description": "Roll group initiative from the Combat tracker.",
   "author": "thorni",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "minimumCoreVersion": "0.5.3",
   "scripts": [],
   "esmodules": ["group-initiative.js"],
