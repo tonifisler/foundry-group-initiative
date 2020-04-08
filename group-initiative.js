@@ -95,44 +95,25 @@ async function rollGroupInitiative() {
   await ChatMessage.createMany(messages);
 }
 
-class GICombatTrackerConfig extends CombatTrackerConfig {
-  get NAME() {
-    return 'trackerConfig';
-  }
-
-  // Add our new setting.
-  async getData() {
-    const superSettings = await super.getData();
-    return {
-      settings: {
-        ...superSettings.settings,
-        [SETTING_NAME]: game.settings.get(MODULE_NAME, SETTING_NAME)
-      },
-    };
+Hooks.on('renderCombatTrackerConfig', async (ctc, html) => {
+  const data = {
+    rollGroupInitiative: game.settings.get(MODULE_NAME, SETTING_NAME),
   };
 
-  // Change the rendered template.
-  static get defaultOptions() {
-    return mergeObject(super.defaultOptions, {
-      template: "modules/group-initiative/templates/combat-config.html",
-    });
-  }
+  const newOption = await renderTemplate('modules/group-initiative/templates/combat-config.html', data);
 
-  // Save our custom setting when updating.
-  _updateObject(event, formData) {
-    super._updateObject(event, formData);
-    
-    game.settings.set(MODULE_NAME, SETTING_NAME, formData.rollGroupInitiative);
-  }
-}
+  html
+    .css({ 'height': 'auto' })
+    .find('button[name=submit]')
+    .before(newOption);
+});
+
+Hooks.on('closeCombatTrackerConfig', async (ctc) => {
+  // Save the setting when closing the combat tracker setting.
+  game.settings.set(MODULE_NAME, SETTING_NAME, ctc.form.querySelector('#rollGroupInitiative').checked)
+})
 
 Hooks.on('renderCombatTracker', (component, html, data) => {
-  // Display changed Combat settings
-  html.find('.combat-settings').off().click(ev => {
-    ev.preventDefault();
-    new GICombatTrackerConfig().render(true);
-  });
-
   // Roll NPC with group initiative if needed
   html.find('[data-control=rollNPC]').off().click(async event => {
     event.preventDefault();
