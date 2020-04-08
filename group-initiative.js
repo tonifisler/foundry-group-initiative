@@ -4,16 +4,10 @@ const MODULE_NAME = 'groupInitiative';
 const SETTING_NAME = 'rollGroupInitiative';
 
 async function rollGroupInitiative() {
+  console.log('Group Initiative | Rolling initiative!');
+  
   const npcs = this.turns.filter(t => (!t.actor || !t.players.length) && !t.initiative);
   if (!npcs.length) return;
-
-  // Check if setting is active
-  const shouldRollGroupInitiative = game.settings.get(MODULE_NAME, SETTING_NAME);
-
-  if (!shouldRollGroupInitiative) {
-    this.rollNPC();
-    return;
-  }
 
   // Split the combatants in groups based on actor id.
   const groups = npcs.reduce((g, combatant) => ({
@@ -66,19 +60,12 @@ Hooks.on('closeCombatTrackerConfig', async (ctc) => {
 })
 
 Hooks.on('renderCombatTracker', (component, html, data) => {
-  // Roll NPC with group initiative if needed
-  html.find('[data-control=rollNPC]').off().click(async event => {
-    event.preventDefault();
-    const ctrl = event.currentTarget;
-    if (ctrl.getAttribute("disabled")) return;
-    else ctrl.setAttribute("disabled", true);
-
-    // Current Combat
+  const shouldRollGroupInitiative = game.settings.get(MODULE_NAME, SETTING_NAME);
+  
+  if (shouldRollGroupInitiative) {
     const combat = game.combats.viewed;
-    await rollGroupInitiative.bind(combat)();
-    
-    ctrl.removeAttribute("disabled");
-  });
+    combat.rollNPC = rollGroupInitiative.bind(combat);
+  }
 });
 
 Hooks.on('init', () => {
