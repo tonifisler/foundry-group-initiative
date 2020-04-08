@@ -1,5 +1,5 @@
 {
-  "COMBAT.groupRollsInitiative": "rolls for the group Initiative!",
+  "COMBAT.groupRollsInitiative": "Rolling for group Initiative!",
   "COMBAT.RollGroupInitiative": "Roll group initiative",
   "COMBAT.RollGroupInitiativeHint": "Make one roll for an entire group of identical creatures (the same actor)."
 }

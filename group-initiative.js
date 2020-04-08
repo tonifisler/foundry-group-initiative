@@ -4,14 +4,13 @@ const MODULE_NAME = 'groupInitiative';
 const SETTING_NAME = 'rollGroupInitiative';
 
 async function rollGroupInitiative() {
-  const currentId = this.combatant._id;
-
   const npcs = this.turns.filter(t => (!t.actor || !t.players.length) && !t.initiative);
+  if (!npcs.length) return;
 
   // Check if setting is active
-  const setting = game.settings.get(MODULE_NAME, SETTING_NAME);
+  const shouldRollGroupInitiative = game.settings.get(MODULE_NAME, SETTING_NAME);
 
-  if (!setting || !npcs.length) {
+  if (!shouldRollGroupInitiative) {
     this.rollNPC();
     return;
   }
@@ -25,74 +24,27 @@ async function rollGroupInitiative() {
   // Get first Combatant id for each group
   const ids = Object.keys(groups).map(key => groups[key][0]);
 
-  const formula = null;
-  const messageOptions = {};
+  const messageOptions = {
+    flavor: game.i18n.localize('COMBAT.groupRollsInitiative'),
+  };
 
-  // START CLONE
-  // CLONED FROM FOUNDRY ROLLINITIATIVE METHOD
-  // Iterate over Combatants, performing an initiative roll for each
-  const [updates, messages] = ids.reduce((results, id, i) => {
-    let [updates, messages] = results;
+  // Roll initiative for the group leaders only.
+  await this.rollInitiative(ids, null, messageOptions);
+  
+  // Prepare the others in the group.  
+  const updates = npcs.reduce((updates, {_id, initiative, actor}) => {
+    const group = groups[actor._id];
+    if (group.length <= 1 || initiative) return updates;
 
-    // Get Combatant data
-    const c = this.getCombatant(id);
-    if (!c) return results;
+    // Get initiative from leader of group.
+    initiative = this.getCombatant(group[0]).initiative;
+    
+    updates.push({ _id, initiative });
+    return updates;
+  }, []);
 
-    // Roll initiative
-    const cf = formula || this._getInitiativeFormula(c);
-    const rollData = c.actor ? c.actor.getRollData() : {};
-    const roll = new Roll(cf, rollData).roll();
-    updates.push({ _id: id, initiative: roll.total });
-
-    // Construct chat message data
-    const rollMode = messageOptions.rollMode || (c.token.hidden || c.hidden) ? "gmroll" : "roll";
-    let messageData = mergeObject({
-      speaker: {
-        scene: canvas.scene._id,
-        actor: c.actor ? c.actor._id : null,
-        token: c.token._id,
-        alias: c.token.name
-      },
-      flavor: `${c.token.name} rolls for Initiative!`
-    }, messageOptions);
-    const chatData = roll.toMessage(messageData, { rollMode, create: false });
-    if (i > 0) chatData.sound = null;   // Only play 1 sound for the whole set
-    messages.push(chatData);
-
-    // Return the Roll and the chat data
-    return results;
-  }, [[], []]);
-  // END CLONE
-
-  // Update all other combatants from group
-  updates.forEach((update, i) => {
-    // Get to-be-updated combatant
-    const combatant = this.getCombatant(update._id);
-    // Get all others from group
-    const group = groups[combatant.actor.id].filter(c => c !== update._id);
-
-    if (group.length > 0) {
-      // Rewrite message flavor
-      messages[i].flavor = `${combatant.actor.name} ${game.i18n.localize('COMBAT.groupRollsInitiative')}`;
-
-      group.forEach(id => {
-        // Add combatant to updates object
-        updates.push({
-          ...update,
-          _id: id,
-        })
-      })
-    }
-  })
-
-  // Update multiple combatants
-  await this.updateManyEmbeddedEntities("Combatant", updates);
-
-  // Ensure the turn order remains with the same combatant
-  await this.update({ turn: this.turns.findIndex(t => t._id === currentId) });
-
-  // Create multiple chat messages
-  await ChatMessage.createMany(messages);
+  // Batch update all other combatants.
+  this.updateManyEmbeddedEntities('Combatant', updates);
 }
 
 Hooks.on('renderCombatTrackerConfig', async (ctc, html) => {
