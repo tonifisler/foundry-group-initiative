@@ -3,6 +3,7 @@
 ## 1.1.0 (2020-04-08)
 
 - reworked all codebase
+- use prettier
 
 ## 1.0.1 (2020-04-07)
 
