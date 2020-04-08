@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0 (2020-04-08)
+
+- reworked all codebase
+
 ## 1.0.1 (2020-04-07)
 
 - only roll for NPCs
