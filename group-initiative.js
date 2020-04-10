@@ -74,8 +74,8 @@ Hooks.on('renderCombatTracker', (component, html, data) => {
     SETTING_NAME
   );
 
-  if (shouldRollGroupInitiative) {
-    const combat = game.combats.viewed;
+  const combat = game.combats.viewed;
+  if (shouldRollGroupInitiative && combat) {
     combat.rollNPC = rollGroupInitiative.bind(combat);
   }
 });
