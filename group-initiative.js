@@ -43,7 +43,7 @@ async function rollGroupInitiative() {
   }, []);
 
   // Batch update all other combatants.
-  this.updateManyEmbeddedEntities('Combatant', updates);
+  this.updateEmbeddedEntity('Combatant', updates);
 }
 
 Hooks.on('renderCombatTrackerConfig', async (ctc, html) => {
