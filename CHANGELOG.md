@@ -3,6 +3,7 @@
 ## 1.2.0 (2020-04-14)
 
 - replace some deprecated functions for 0.5.4
+- fix config not being saved correctly
 
 ## 1.1.1 (2020-04-10)
 

@@ -3,13 +3,28 @@
 const MODULE_NAME = 'groupInitiative';
 const SETTING_NAME = 'rollGroupInitiative';
 
-async function rollGroupInitiative() {
-  console.log('Group Initiative | Rolling initiative!');
+const setupSettings = () => {
+  // Create the setting if it doesn't exist
+  try {
+    game.settings.get(MODULE_NAME, SETTING_NAME);
+  } catch (e) {
+    if (e.message !== 'This is not a registered game setting') {
+      throw e;
+    }
 
+    game.settings.register(MODULE_NAME, SETTING_NAME, {
+      rollGroupInitiative: false,
+    });
+  }
+};
+
+async function rollGroupInitiative() {
   const npcs = this.turns.filter(
     t => (!t.actor || !t.players.length) && !t.initiative
   );
   if (!npcs.length) return;
+
+  console.log('group-initiative | Rolling initiative!');
 
   // Split the combatants in groups based on actor id.
   const groups = npcs.reduce(
@@ -59,38 +74,34 @@ Hooks.on('renderCombatTrackerConfig', async (ctc, html) => {
   html.css({height: 'auto'}).find('button[name=submit]').before(newOption);
 });
 
-Hooks.on('closeCombatTrackerConfig', async ctc => {
+Hooks.on('closeCombatTrackerConfig', async ({form}) => {
   // Save the setting when closing the combat tracker setting.
   game.settings.set(
     MODULE_NAME,
     SETTING_NAME,
-    ctc.form.querySelector('#rollGroupInitiative').checked
+    form.querySelector('#rollGroupInitiative').checked
   );
 });
 
-Hooks.on('renderCombatTracker', (component, html, data) => {
+Hooks.on('renderCombatTracker', ({combat}) => {
   const shouldRollGroupInitiative = game.settings.get(
     MODULE_NAME,
     SETTING_NAME
   );
 
-  const combat = game.combats.viewed;
-  if (shouldRollGroupInitiative && combat) {
+  if (!combat) return;
+
+  if (!combat.originalRollNPC) {
+    combat.originalRollNPC = combat.rollNPC;
+  }
+
+  if (shouldRollGroupInitiative) {
     combat.rollNPC = rollGroupInitiative.bind(combat);
+  } else if (combat.originalRollNPC) {
+    combat.rollNPC = combat.originalRollNPC;
   }
 });
 
 Hooks.on('init', () => {
-  // Create the setting if it doesn't exist
-  try {
-    game.settings.get(MODULE_NAME, SETTING_NAME);
-  } catch (e) {
-    if (e.message !== 'This is not a registered game setting') {
-      throw e;
-    }
-
-    game.settings.register(MODULE_NAME, SETTING_NAME, {
-      rollGroupInitiative: false,
-    });
-  }
+  setupSettings();
 });
