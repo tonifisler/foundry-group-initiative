@@ -5,7 +5,7 @@
   "author": "thorni",
   "version": "1.2.0",
   "minimumCoreVersion": "0.5.3",
-  "compatibleCoreVersion": "0.5.4",
+  "compatibleCoreVersion": "0.5.5",
   "scripts": [],
   "esmodules": ["group-initiative.js"],
   "url": "https://github.com/tonifisler/foundry-group-initiative",
