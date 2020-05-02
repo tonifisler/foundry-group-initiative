@@ -1,9 +1,14 @@
 # Changelog
 
+## 1.3.0 (2020-05-02)
+
+- improve code quality
+- roll grouped initiative from "Roll All" button too (thanks @Norc) #1
+
 ## 1.2.0 (2020-04-14)
 
 - replace some deprecated functions for 0.5.4
-- fix base rollNPC method not used when disabling group initiaitive setting after having enabled it
+- fix base rollNPC method not used when disabling group initiative setting after having enabled it
 
 ## 1.1.1 (2020-04-10)
 
