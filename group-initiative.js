@@ -39,18 +39,39 @@ const initSetting = (key, setting) => {
 };
 
 /**
- * Roll the group initiative
+ * Override the RollNPC method.
+ *
+ * @returns {Promise<void>}
  */
-async function rollGroupInitiative() {
+async function rollNPC() {
   const npcs = this.turns.filter(
     t => (!t.actor || !t.players.length) && !t.initiative
   );
   if (!npcs.length) return;
 
+  await rollGroupInitiative.call(this, npcs);
+}
+
+/**
+ * Override the RollAll method.
+ *
+ * @returns {Promise<void>}
+ */
+async function rollAll() {
+  const unrolled = this.turns.filter(t => !t.initiative);
+  if (!unrolled.length) return;
+
+  await rollGroupInitiative.call(this, unrolled);
+}
+
+/**
+ * Roll the group initiative
+ */
+async function rollGroupInitiative(creatures) {
   console.log('group-initiative | Rolling initiative!');
 
   // Split the combatants in groups based on actor id.
-  const groups = npcs.reduce(
+  const groups = creatures.reduce(
     (g, combatant) => ({
       ...g,
       [combatant.actor.id]: (g[combatant.actor.id] || []).concat(combatant._id),
@@ -69,7 +90,7 @@ async function rollGroupInitiative() {
   await this.rollInitiative(ids, null, messageOptions);
 
   // Prepare the others in the group.
-  const updates = npcs.reduce((updates, {_id, initiative, actor}) => {
+  const updates = creatures.reduce((updates, {_id, initiative, actor}) => {
     const group = groups[actor._id];
     if (group.length <= 1 || initiative) return updates;
 
@@ -118,11 +139,21 @@ Hooks.on('renderCombatTracker', ({combat}) => {
   if (!combat.originalRollNPC) {
     combat.originalRollNPC = combat.rollNPC;
   }
+  if (!combat.originalRollAll) {
+    combat.originalRollAll = combat.rollAll;
+  }
 
   if (CONFIG_GROUPINITIATIVE) {
-    combat.rollNPC = rollGroupInitiative.bind(combat);
-  } else if (combat.originalRollNPC) {
-    combat.rollNPC = combat.originalRollNPC;
+    combat.rollNPC = rollNPC.bind(combat);
+    combat.rollAll = rollAll.bind(combat);
+  } else {
+    // Reset the methods.
+    if (combat.originalRollNPC) {
+      combat.rollNPC = combat.originalRollNPC;
+    }
+    if (combat.originalRollAll) {
+      combat.rollAll = combat.originalRollAll;
+    }
   }
 });
 

@@ -1,5 +1,5 @@
 {
-  "COMBAT.groupRollsInitiative": "Lance l'initiative du groupe!",
+  "COMBAT.groupRollsInitiative": "Lance l'initiative! (par groupe)",
   "COMBAT.RollGroupInitiative": "Lancer l'initiative par groupe",
   "COMBAT.RollGroupInitiativeHint": "Faire un seul jet d'initiative par groupe de créatures identiques (le même acteur) depuis le Combat Tracker."
 }
