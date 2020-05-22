@@ -1,0 +1,5 @@
+{
+  "COMBAT.groupRollsInitiative": "우선권 굴리기! (그룹)",
+  "COMBAT.RollGroupInitiative": "집단 우선권 굴림",
+  "COMBAT.RollGroupInitiativeHint": "컴뱃 트래커에서 \"NPC 우선권 굴리기\" 혹은 \"모든 우선권 굴리기\" 버튼을 눌렀을 때 동일 크리처(동일 액터) 집단이 굴림값을 공유한다."
+}

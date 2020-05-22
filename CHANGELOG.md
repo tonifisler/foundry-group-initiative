@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1 (2020-05-22)
+
+- add Korean language support (thanks @KLO#1490)
+
 ## 1.3.0 (2020-05-02)
 
 - improve code quality
