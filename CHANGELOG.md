@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.2 (2020-10-05)
+
+- fix rollInitiative for 0.7.x #4 #5
+
 ## 1.3.1 (2020-05-22)
 
 - add Korean language support (thanks @KLO#1490)
