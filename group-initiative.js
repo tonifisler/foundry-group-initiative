@@ -87,7 +87,7 @@ async function rollGroupInitiative(creatures) {
   };
 
   // Roll initiative for the group leaders only.
-  await this.rollInitiative(ids, {messageOptions});
+  await this.rollInitiative(ids, null, messageOptions);
 
   // Prepare the others in the group.
   const updates = creatures.reduce((updates, {_id, initiative, actor}) => {
