@@ -170,3 +170,73 @@ Hooks.once('init', () => {
     config: false,
   });
 });
+
+// separate hook from above to allow enable/disable through a module setting
+Hooks.on("renderCombatTracker", (app, html, data) => {
+  const combat = app.combat;
+  // if no combat, return
+  if (!combat) return;
+  let combatants = combat.turns;
+  // if dnd5e, don't collapse character-type actors; could be extended to cover more actor types in a module setting
+  if (game.system.id === "dnd5e") combatants = combatants.filter(c => c.actor.data.type !== "character");
+  // create initiative groups; array of arrays
+  let groups = [];
+  let groupsIndex = 0;
+  groups[groupsIndex] = [combatants[0]];
+  for (let i = 1; i < combatants.length; i++) {
+      // if current combatant has different initiatve value from previous combatant, create a new initiative group
+      if (combatants[i].initiative !== combatants[i - 1].initiative) {
+          groupsIndex++;
+          groups[groupsIndex] = [];
+      }
+      groups[groupsIndex].push(combatants[i]);
+  }
+  // if only 1 initiative group, return 
+  if (groups.length < 2) return;
+
+  // filter out initiative groups with only a single combatant (no need to collapse)
+  groups = groups.filter(g => g.length > 1);
+  // for each group, use the first combatant as a "header"
+  const headerCombatants = groups.map(g => g[0]);
+  // get the list item HTML element corresponding to the header combatants
+  const lis = html.find("li");
+  const headerCombatantLIs = headerCombatants.map(c => {
+      for (let li of lis) if ($(li).data("combatantId") === c._id) return li;
+  });
+  // create initiative groups of list item elements
+  const initiativeGroups = []
+  for (let i = 0; i < headerCombatantLIs.length; i++) {
+      const current = headerCombatantLIs[i];
+      const currentGroup = [current];
+      $(current).nextAll().splice(0, groups[i].length - 1).forEach(e => currentGroup.push(e));
+      initiativeGroups.push(currentGroup);
+  }
+  // for each list item element initiative group, wrap group in a HTML details element to collapse them
+  for (let i = 0; i < initiativeGroups.length; i++) {
+      $(initiativeGroups[i]).wrapAll(`<details id="${headerCombatants[i]._id}" />`);
+      $(initiativeGroups[i]).css("padding-left", "30px");
+
+    // create a summary element for each details element, based on header combatant
+    const headerCombatant = headerCombatants[i];
+    const currentGroup = $(headerCombatantLIs[i]).prop("parentElement");
+    const headerHTML = `
+      <summary>
+        <li class="combatant actor directory-item flexrow">
+            <img class="token-image" src=${headerCombatant.img} title=${headerCombatant.name}>
+            <div class="token-name flexcol">
+                <h4>${headerCombatant.name}</h4>
+            </div>
+            <div class="token-initiative">
+                <span class="initiative">${headerCombatant.initiative}</span>
+            </div>
+        </li>
+      </summary>
+    `;
+    $(headerHTML).prependTo(currentGroup)
+  }
+
+  // if current combatant is in a collapsed group, open the group
+  const activeCombatantLI = html.find("li.active");
+  const details = $(activeCombatantLI).prop("parentElement");
+  if ($(details).prop("nodeName") === "DETAILS") $(details).prop("open", true);
+});
