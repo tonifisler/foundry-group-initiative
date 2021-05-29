@@ -1,5 +1,7 @@
 {
   "COMBAT.groupRollsInitiative": "Rolling for Initiative! (grouped)",
   "COMBAT.RollGroupInitiative": "Roll group initiative",
-  "COMBAT.RollGroupInitiativeHint": "Make one roll for an entire group of identical creatures (the same actor) directly from the Combat Tracker \"Roll NPCs\" or \"Roll All\" buttons."
+  "COMBAT.RollGroupInitiativeHint": "Make one roll for an entire group of identical creatures (the same actor) directly from the Combat Tracker \"Roll NPCs\" or \"Roll All\" buttons.",
+  "COMBAT.SkipGrouped": "Skip grouped combatants",
+  "COMBAT.SkipGroupedHint": "Skip combatants except for the first in a group."
 }

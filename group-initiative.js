@@ -5,6 +5,7 @@ const SETTING_NAME = 'rollGroupInitiative';
 
 // Default setting
 let CONFIG_GROUPINITIATIVE = false;
+let CONFIG_SKIPGROUPED = false;
 
 /**
  * Shortcut to localize.
@@ -111,6 +112,7 @@ async function rollGroupInitiative(creatures) {
 Hooks.on('renderCombatTrackerConfig', async (ctc, html) => {
   const data = {
     rollGroupInitiative: CONFIG_GROUPINITIATIVE,
+    skipGrouped: CONFIG_SKIPGROUPED,
   };
 
   const newOption = await renderTemplate(
@@ -126,8 +128,10 @@ Hooks.on('renderCombatTrackerConfig', async (ctc, html) => {
  */
 Hooks.on('closeCombatTrackerConfig', async ({form}) => {
   CONFIG_GROUPINITIATIVE = form.querySelector('#rollGroupInitiative').checked;
+  CONFIG_SKIPGROUPED = form.querySelector('#skipGrouped').checked;
   // Save the setting when closing the combat tracker setting.
   await game.settings.set(MODULE_NAME, SETTING_NAME, CONFIG_GROUPINITIATIVE);
+  await game.settings.set(MODULE_NAME, "skipGrouped", CONFIG_SKIPGROUPED);
 });
 
 /**
@@ -169,23 +173,31 @@ Hooks.once('init', () => {
     scope: 'world',
     config: false,
   });
+
+  CONFIG_SKIPGROUPED = initSetting("skipGrouped", {
+    name: "Skip grouped combatants", // LOCALIZE
+    hint: "Skip combatants following the first in a group.", // LOCALIZE
+    default: CONFIG_SKIPGROUPED,
+    type: Boolean,
+    scope: 'world',
+    config: false,
+  })
 });
 
-// separate hook from above to allow enable/disable through a module setting
-Hooks.on("renderCombatTracker", (app, html, data) => {
+Hooks.on("renderCombatTracker", async (app, html, data) => {
+  // if not using grouped initiative, return
+  if (!CONFIG_GROUPINITIATIVE) return;
   const combat = app.combat;
   // if no combat, return
   if (!combat) return;
   let combatants = combat.turns;
-  // if dnd5e, don't collapse character-type actors; could be extended to cover more actor types in a module setting
-  if (game.system.id === "dnd5e") combatants = combatants.filter(c => c.actor.data.type !== "character");
   // create initiative groups; array of arrays
   let groups = [];
   let groupsIndex = 0;
   groups[groupsIndex] = [combatants[0]];
   for (let i = 1; i < combatants.length; i++) {
-      // if current combatant has different initiatve value from previous combatant, create a new initiative group
-      if (combatants[i].initiative !== combatants[i - 1].initiative) {
+      // if current combatant has a different actor than previous combatant, create a new initiative group
+      if (combatants[i].actor.id !== combatants[i - 1].actor.id) {
           groupsIndex++;
           groups[groupsIndex] = [];
       }
@@ -227,7 +239,7 @@ Hooks.on("renderCombatTracker", (app, html, data) => {
                 <h4>${headerCombatant.name}</h4>
             </div>
             <div class="token-initiative">
-                <span class="initiative">${headerCombatant.initiative}</span>
+                <span class="initiative">${headerCombatant.initiative || ""}</span>
             </div>
         </li>
       </summary>
@@ -238,5 +250,9 @@ Hooks.on("renderCombatTracker", (app, html, data) => {
   // if current combatant is in a collapsed group, open the group
   const activeCombatantLI = html.find("li.active");
   const details = $(activeCombatantLI).prop("parentElement");
-  if ($(details).prop("nodeName") === "DETAILS") $(details).prop("open", true);
+  if ($(details).prop("nodeName") === "DETAILS") {
+    if (CONFIG_SKIPGROUPED && $(activeCombatantLI).prev().prop("nodeName") === "LI") return game.combat.nextTurn();
+    $(details).prop("open", true);
+  }
+
 });
