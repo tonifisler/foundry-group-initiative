@@ -133,7 +133,9 @@ Hooks.on('closeCombatTrackerConfig', async ({form}) => {
 /**
  * Override the roll methods from combat tracker.
  */
-Hooks.on('renderCombatTracker', ({combat}) => {
+Hooks.on('renderCombatTracker', ( app, html, options ) => {
+  let combat = options.combat ;
+
   if (!combat) return;
 
   if (!combat.originalRollNPC) {
