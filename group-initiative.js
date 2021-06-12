@@ -189,7 +189,7 @@ Hooks.once('init', () => {
 Hooks.on("renderCombatTracker", async (app, html, data) => {
   // if not using grouped initiative, return
   if (!CONFIG_GROUPINITIATIVE) return;
-  const combat = app.combat;
+  const combat = data.combat || app.combat;
   // if no combat, return
   if (!combat) return;
   let combatants = combat.turns;
