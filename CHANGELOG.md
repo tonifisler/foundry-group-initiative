@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.0 (2020-07-06)
+
+- Updated base functionality to be compatible with Foundry Core 0.8.8. 
+
 ## 1.3.1 (2020-05-22)
 
 - add Korean language support (thanks @KLO#1490)
