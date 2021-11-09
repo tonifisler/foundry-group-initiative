@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.0 (2021-11-09)
+
+- collapsible initiative groups - @jessev14
+- change collapsible initiative groups styling
+- update core compatibility ready for 0.8.x and v9 - @Stendarpaval & @strongpauly
+- refactor code
+
 ## 1.3.1 (2020-05-22)
 
 - add Korean language support (thanks @KLO#1490)
