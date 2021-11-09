@@ -2,7 +2,10 @@
   "name": "group-initiative",
   "title": "Group Initiative",
   "description": "Roll group initiative from the Combat tracker.",
-  "author": [
+  "authors": [
+    {
+      "name": "thorni"
+    },
     {
       "name": "VTT Lair",
       "url": "https://github.com/vtt-lair"
