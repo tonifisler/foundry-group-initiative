@@ -27,7 +27,9 @@
     <li class="combatant actor directory-item flexrow">
         <img class="token-image" src="{{ CombatantImage }}" title="{{ CombatantName }}">
         <div class="token-name flexcol">
-            <h4>{{ CombatantName }}</h4>
+            <h4>
+                {{ CombatantName }} {{#if ShowHiddenMask}} <span><i class="fas fa-mask" title="{{ToolTip}}"></i></span> {{/if}}
+            </h4>
         </div>
         <div class="token-initiative">
             <span class="initiative">{{ CombatantInitiative }}</span>
