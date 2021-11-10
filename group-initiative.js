@@ -28,6 +28,17 @@ const _gi_initSetting = (key, setting) => {
     return config;
 };
 
+const _gi_settingkeys = {
+    hideNames: {
+        enableHostile: "enableHideHostileNames",
+        enableNeutral: "enableHideNeutralNames",
+        enableFriendly: "enableHideFriendlyNames",
+        hostileNameReplacement: "hostileNameReplacement",
+        neutralNameReplacement: "neutralNameReplacement",
+        friendlyNameReplacement: "friendlyNameReplacement"
+    }
+}
+
 const GroupInitiative = {
     /**
      * Override the RollNPC method.
@@ -94,6 +105,36 @@ const GroupInitiative = {
 
         // Batch update all other combatants.
         this.updateEmbeddedEntity('Combatant', updates);
+    },
+
+    /**
+     * TEMPORARY! Awaiting CUB API access - Checks an actor to see if its name should be replaced
+     * @param {*} actor 
+     * @returns {Boolean} shouldReplace
+     */
+    shouldReplaceName(actor) {
+        const dispositionEnum = actor.isToken ? actor.token.data.disposition : actor.data.token.disposition;
+        const disposition = Object.keys(CONST.TOKEN_DISPOSITIONS).find(key => CONST.TOKEN_DISPOSITIONS[key] === dispositionEnum);
+        const dispositionEnableSetting = game.settings.get('combat-utility-belt', _gi_settingkeys.hideNames[`enable${disposition.titleCase()}`]);
+        const actorEnableFlag = actor.getFlag('combat-utility-belt', 'enableHideName');
+        const enableHide = actorEnableFlag ?? dispositionEnableSetting;
+
+        return !!enableHide;
+    },
+
+    /**
+     * TEMPORARY! Awaiting CUB API access - For a given actor, find out if there is a replacement name and return it
+     * @param {*} actor 
+     * @returns {String} replacementName
+     */
+    getReplacementName(actor) {
+        const dispositionEnum = actor.isToken ? actor.token.data.disposition : actor.data.token.disposition;
+        const disposition = Object.keys(CONST.TOKEN_DISPOSITIONS).find(key => CONST.TOKEN_DISPOSITIONS[key] === dispositionEnum);
+        const replacementSetting = game.settings.get('combat-utility-belt', _gi_settingkeys.hideNames[`${disposition.toLowerCase()}NameReplacement`]);
+        const replacementFlag = actor.getFlag('combat-utility-belt', 'hideNameReplacement');
+        const replacementName = replacementFlag ?? replacementSetting;
+
+        return replacementName;
     }
 }
 
@@ -205,6 +246,7 @@ Hooks.on("renderCombatTracker", async (app, html, data) => {
     groups = groups.filter(g => g.length > 1);
     // for each group, use the first combatant as a "header"
     const headerCombatants = groups.map(g => g[0]);
+    const headerActor = headerCombatants[0].actor;
     // get the list item HTML element corresponding to the header combatants
     const lis = html.find("li");
     const headerCombatantLIs = headerCombatants.map(c => {
@@ -227,11 +269,29 @@ Hooks.on("renderCombatTracker", async (app, html, data) => {
 
         // create a summary element for each details element, based on header combatant
         const currentGroup = $(headerCombatantLIs[i]).prop("parentElement");
-
+        let shouldReplace = false;
+        let combatantName = headerCombatants[i].name;
+        let showHiddenMask = false;
+        let toolTip = '';
+        if (game.modules.get("combat-utility-belt")?.active) {
+            shouldReplace = GroupInitiative.shouldReplaceName(headerActor);
+            
+            if (shouldReplace) {
+                if (game.user.isGM) {
+                    showHiddenMask = true;
+                    toolTip = GroupInitiative.getReplacementName(headerActor);
+                } else {
+                    combatantName = GroupInitiative.getReplacementName(headerActor);
+                }
+            }
+        }
+        
         const data = {
-            CombatantImage: headerCombatants[i].img,
-            CombatantName: headerCombatants[i].name,
+            CombatantImage: headerCombatants[i].img,            
             CombatantInitiative: headerCombatants[i].initiative || "",
+            CombatantName: combatantName,
+            ShowHiddenMask: showHiddenMask,
+            ToolTip: toolTip,
         };
     
         const groupHeader = await renderTemplate(

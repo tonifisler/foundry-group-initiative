@@ -2,23 +2,15 @@
   "name": "group-initiative",
   "title": "Group Initiative",
   "description": "Roll group initiative from the Combat tracker.",
-  "authors": [
-    {
-      "name": "thorni"
-    },
-    {
-      "name": "VTT Lair",
-      "url": "https://github.com/vtt-lair"
-    }
-  ],
-  "version": "2.0.0",
+  "author": "thorni, VTT Lair",
+  "version": "2.0.1",
   "minimumCoreVersion": "0.8.6",
   "compatibleCoreVersion": "0.8.9",
   "scripts": [],
   "esmodules": ["group-initiative.js"],
   "url": "https://github.com/vtt-lair/foundry-group-initiative",
   "manifest": "https://github.com/vtt-lair/foundry-group-initiative/releases/latest/download/module.json",
-  "download": "https://github.com/vtt-lair/foundry-group-initiative/releases/download/2.0.0/group-initiative-v2.0.0.zip",
+  "download": "https://github.com/vtt-lair/foundry-group-initiative/releases/download/2.0.1/group-initiative-v2.0.1.zip",
   "changelog": "https://github.com/tonifisler/foundry-group-initiative/blob/master/CHANGELOG.md",
   "readme": "https://github.com/tonifisler/foundry-group-initiative/blob/master/README.md",
   "languages": [
