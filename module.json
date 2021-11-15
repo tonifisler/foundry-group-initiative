@@ -2,7 +2,7 @@
   "name": "group-initiative",
   "title": "Group Initiative",
   "description": "Roll group initiative from the Combat tracker.",
-  "author": "thorni, VTT Lair",
+  "author": "VTT Lair, thorni",
   "version": "2.0.1",
   "minimumCoreVersion": "0.8.6",
   "compatibleCoreVersion": "0.8.9",
