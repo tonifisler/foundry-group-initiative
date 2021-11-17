@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.2
+
+- fix issue with skipped groups and backwards turn moving
+
 ## 2.0.1 (2021-11-10)
 
 - use CUB's Hide Name functionality to make sure group headers also hide names
