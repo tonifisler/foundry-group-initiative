@@ -305,7 +305,13 @@ Hooks.on("renderCombatTracker", async (app, html, data) => {
     const activeCombatantLI = html.find("li.active");
     const details = $(activeCombatantLI).prop("parentElement");
     if ($(details).prop("nodeName") === "DETAILS") {
-        if (_gi_CONFIG_SKIPGROUPED && $(activeCombatantLI).prev().prop("nodeName") === "LI") return game.combat.nextTurn();
+        if (_gi_CONFIG_SKIPGROUPED && $(activeCombatantLI).prev().prop("nodeName") === "LI") {
+            if (game.combat.current.turn < game.combat.previous.turn) {
+                return game.combat.previousTurn();
+            } else {
+                return game.combat.nextTurn();
+            }
+        } 
         $(details).prop("open", true);
     }
 });
