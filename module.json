@@ -14,6 +14,11 @@
   "compatibleCoreVersion": "0.8.9",
   "scripts": [],
   "esmodules": ["group-initiative.js"],
+  "dependencies": [
+    {
+        "name": "lib-wrapper", "type": "module"
+    }
+  ],
   "url": "https://github.com/vtt-lair/foundry-group-initiative",
   "manifest": "https://github.com/vtt-lair/foundry-group-initiative/releases/latest/download/module.json",
   "download": "https://github.com/vtt-lair/foundry-group-initiative/releases/download/2.0.2/group-initiative-v2.0.2.zip",

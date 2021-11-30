@@ -7,6 +7,9 @@ const _gi_SETTING_NAME = 'rollGroupInitiative';
 let _gi_CONFIG_GROUPINITIATIVE = false;
 let _gi_CONFIG_SKIPGROUPED = false;
 
+let _gi_openedGroups = [];
+let _gi_rollsWrapped = false;
+
 // Shortcut to localize. 
 const _gi_i18n = key => game.i18n.localize(key);
 
@@ -27,9 +30,6 @@ const _gi_initSetting = (key, setting) => {
 
     return config;
 };
-
-let _gi_openedGroups = [];
-
 
 const _gi_settingkeys = {
     hideNames: {
@@ -165,25 +165,32 @@ const GroupInitiative = {
     overrideRollMethods(combat) {
         if (!combat) return;
 
-        if (!combat.originalRollNPC) {
-            combat.originalRollNPC = combat.rollNPC;
-        }
-        if (!combat.originalRollAll) {
-            combat.originalRollAll = combat.rollAll;
-        }
+        if (!game.modules.get("lib-wrapper")?.active) {
+            if (!combat.originalRollNPC) {
+                combat.originalRollNPC = combat.rollNPC;
+            }
+            if (!combat.originalRollAll) {
+                combat.originalRollAll = combat.rollAll;
+            }
 
-        if (_gi_CONFIG_GROUPINITIATIVE) {
-            combat.rollNPC = GroupInitiative.rollNPC.bind(combat);
-            combat.rollAll = GroupInitiative.rollAll.bind(combat);
-        } else {
-            // Reset the methods.
-            if (combat.originalRollNPC) {
-                combat.rollNPC = combat.originalRollNPC;
+            if (_gi_CONFIG_GROUPINITIATIVE) {
+                combat.rollNPC = GroupInitiative.rollNPC.bind(combat);
+                combat.rollAll = GroupInitiative.rollAll.bind(combat);
+            } else {
+                // Reset the methods.
+                if (combat.originalRollNPC) {
+                    combat.rollNPC = combat.originalRollNPC;
+                }
+                if (combat.originalRollAll) {
+                    combat.rollAll = combat.originalRollAll;
+                }
             }
-            if (combat.originalRollAll) {
-                combat.rollAll = combat.originalRollAll;
-            }
-        }
+        } else if (!_gi_rollsWrapped) {
+            libWrapper.register(_gi_MODULE_NAME, "Combat.prototype.rollAll", GroupInitiative.rollAll.bind(combat), "MIXED");
+            libWrapper.register(_gi_MODULE_NAME, "Combat.prototype.rollNPC", GroupInitiative.rollNPC.bind(combat), "MIXED");            
+            _gi_rollsWrapped = true;
+        };
+        
     },
 
     eventListeners(html) {
@@ -238,6 +245,10 @@ Hooks.on('closeCombatTrackerConfig', async ({ form }) => {
  * Init the settings.
  */
 Hooks.once('init', () => {
+    if (!game.modules.get("lib-wrapper")?.active) {
+        ui.notifications.warn("It's advised to enable libWrapper with the Group Initiative module");
+    }
+
     _gi_CONFIG_GROUPINITIATIVE = _gi_initSetting(_gi_SETTING_NAME, {
         name: _gi_i18n('COMBAT.RollGroupInitiative'),
         hint: _gi_i18n('COMBAT.RollGroupInitiativeHint'),
