@@ -28,6 +28,9 @@ const _gi_initSetting = (key, setting) => {
     return config;
 };
 
+let _gi_openedGroups = [];
+
+
 const _gi_settingkeys = {
     hideNames: {
         enableHostile: "enableHideHostileNames",
@@ -104,7 +107,7 @@ const GroupInitiative = {
         }, []);
 
         // Batch update all other combatants.
-        this.updateEmbeddedEntity('Combatant', updates);
+        await this.updateEmbeddedDocuments('Combatant', updates);
     },
 
     /**
@@ -135,6 +138,70 @@ const GroupInitiative = {
         const replacementName = replacementFlag ?? replacementSetting;
 
         return replacementName;
+    },
+
+    getGroups(combatants) {
+        let groups = [];
+        let groupsIndex = 0;
+        let groupUpdates = [];
+        groups[groupsIndex] = [combatants[0]];
+        for (let i = 1; i < combatants.length; i++) {
+            // check if there is a group with this actor as id
+            let useGroupIndex = groups.findIndex((x) => x[0]?.actor?.id === combatants[i].actor.id);
+            if (useGroupIndex === -1) {
+                groupsIndex++;
+                groups[groupsIndex] = [];
+                useGroupIndex = groupsIndex;
+            }
+            
+            if (useGroupIndex > -1) {
+                groups[useGroupIndex].push(combatants[i]);
+            }        
+        }
+
+        return groups;
+    },
+
+    overrideRollMethods(combat) {
+        if (!combat) return;
+
+        if (!combat.originalRollNPC) {
+            combat.originalRollNPC = combat.rollNPC;
+        }
+        if (!combat.originalRollAll) {
+            combat.originalRollAll = combat.rollAll;
+        }
+
+        if (_gi_CONFIG_GROUPINITIATIVE) {
+            combat.rollNPC = GroupInitiative.rollNPC.bind(combat);
+            combat.rollAll = GroupInitiative.rollAll.bind(combat);
+        } else {
+            // Reset the methods.
+            if (combat.originalRollNPC) {
+                combat.rollNPC = combat.originalRollNPC;
+            }
+            if (combat.originalRollAll) {
+                combat.rollAll = combat.originalRollAll;
+            }
+        }
+    },
+
+    eventListeners(html) {
+        const details = html.find('details');
+
+        $(details).on('toggle', (elem) => {
+            if (elem.currentTarget.open) {
+                if (!_gi_openedGroups.includes(elem.currentTarget.id)) {
+                    _gi_openedGroups.push(elem.currentTarget.id);
+                }                
+            } else {
+                const idx = _gi_openedGroups.findIndex((x) => x === elem.currentTarget.id);
+                if (idx > -1) {
+                    _gi_openedGroups.splice(idx, 1);
+                }
+            }
+            
+        });        
     }
 }
 
@@ -168,35 +235,6 @@ Hooks.on('closeCombatTrackerConfig', async ({ form }) => {
 });
 
 /**
- * Override the roll methods from combat tracker.
- */
-Hooks.on('renderCombatTracker', (app, html, options) => {
-    let combat = options.combat;
-
-    if (!combat) return;
-
-    if (!combat.originalRollNPC) {
-        combat.originalRollNPC = combat.rollNPC;
-    }
-    if (!combat.originalRollAll) {
-        combat.originalRollAll = combat.rollAll;
-    }
-
-    if (_gi_CONFIG_GROUPINITIATIVE) {
-        combat.rollNPC = GroupInitiative.rollNPC.bind(combat);
-        combat.rollAll = GroupInitiative.rollAll.bind(combat);
-    } else {
-        // Reset the methods.
-        if (combat.originalRollNPC) {
-            combat.rollNPC = combat.originalRollNPC;
-        }
-        if (combat.originalRollAll) {
-            combat.rollAll = combat.originalRollAll;
-        }
-    }
-});
-
-/**
  * Init the settings.
  */
 Hooks.once('init', () => {
@@ -219,26 +257,19 @@ Hooks.once('init', () => {
     })
 });
 
-Hooks.on("renderCombatTracker", async (app, html, data) => {
+Hooks.on('renderCombatTracker', async (app, html, data) => {
     // if not using grouped initiative, return
     if (!_gi_CONFIG_GROUPINITIATIVE) return;
     const combat = data.combat || app.combat;
     // if no combat, return
     if (!combat) return;
 
+    GroupInitiative.overrideRollMethods(combat);
+
     let combatants = combat.turns;
     // create initiative groups; array of arrays
-    let groups = [];
-    let groupsIndex = 0;
-    groups[groupsIndex] = [combatants[0]];
-    for (let i = 1; i < combatants.length; i++) {
-        // if current combatant has a different actor than previous combatant, create a new initiative group
-        if (combatants[i].actor.id !== combatants[i - 1].actor.id) {
-            groupsIndex++;
-            groups[groupsIndex] = [];
-        }
-        groups[groupsIndex].push(combatants[i]);
-    }
+    
+    let groups = GroupInitiative.getGroups(combatants);
     // if only 1 initiative group, return 
     if (groups.length < 2) return;
 
@@ -246,11 +277,15 @@ Hooks.on("renderCombatTracker", async (app, html, data) => {
     groups = groups.filter(g => g.length > 1);
     // for each group, use the first combatant as a "header"
     const headerCombatants = groups.map(g => g[0]);
-    const headerActor = headerCombatants[0].actor;
+    const headerActor = headerCombatants[0]?.actor;
     // get the list item HTML element corresponding to the header combatants
     const lis = html.find("li");
     const headerCombatantLIs = headerCombatants.map(c => {
-        for (let li of lis) if ($(li).data("combatantId") === c._id) return li;
+        for (let li of lis) {
+            if ($(li).data("combatantId") === c._id) {
+                return li;
+            }
+        }        
     });
 
     // create initiative groups of list item elements
@@ -264,11 +299,11 @@ Hooks.on("renderCombatTracker", async (app, html, data) => {
 
     // for each list item element initiative group, wrap group in a HTML details element to collapse them
     for (let i = 0; i < initiativeGroups.length; i++) {
-        $(initiativeGroups[i]).wrapAll(`<details id="${headerCombatants[i]._id}" />`);
+        const opened = (_gi_openedGroups.findIndex((x) => x === headerCombatants[i]._id) > -1) ? 'open' : '';
+        $(initiativeGroups[i]).wrapAll(`<details id="${headerCombatants[i]._id}" ${opened} />`);
         $(initiativeGroups[i]).css("padding-left", "30px");
 
-        // create a summary element for each details element, based on header combatant
-        const currentGroup = $(headerCombatantLIs[i]).prop("parentElement");
+        // create a summary element for each details element, based on header combatant        
         let shouldReplace = false;
         let combatantName = headerCombatants[i].name;
         let showHiddenMask = false;
@@ -287,6 +322,7 @@ Hooks.on("renderCombatTracker", async (app, html, data) => {
         }
         
         const data = {
+            Id: headerCombatants[i]._id,
             CombatantImage: headerCombatants[i].img,            
             CombatantInitiative: headerCombatants[i].initiative || "",
             CombatantName: combatantName,
@@ -294,6 +330,7 @@ Hooks.on("renderCombatTracker", async (app, html, data) => {
             ToolTip: toolTip,
         };
     
+        const currentGroup = $(headerCombatantLIs[i]).prop("parentElement");
         const groupHeader = await renderTemplate(
             'modules/group-initiative/templates/group-collapse.html',
             data
@@ -313,5 +350,32 @@ Hooks.on("renderCombatTracker", async (app, html, data) => {
             }
         } 
         $(details).prop("open", true);
+    }
+
+    const tracker = html.find("#combat-tracker");
+    GroupInitiative.eventListeners(tracker);
+});
+
+Hooks.on('createCombatant', async (combatant) => {
+    const combat = combatant.combat || {};
+    // if no combat, return
+    if (!combat) return;
+
+    let combatants = combat.turns;
+    let groups = GroupInitiative.getGroups(combatants);
+
+    if (groups.length < 2) return;
+
+    // filter out initiative groups with only a single combatant (no need to collapse)
+    groups = groups.filter(g => g.length > 1);
+    // for each group, use the first combatant as a "header"
+    const headerCombatants = groups.map(g => g[0]);
+
+    // make sure if the header combatant has initiative, that everyone in the group has the same
+    const combatantHeader = headerCombatants.find((x) => x.actor?.id === combatant?.actor?.id);
+    if (combatantHeader?.initiative && !combatant?.initiative) {
+        await combatant.update({
+            initiative: combatantHeader?.initiative
+        });
     }
 });
