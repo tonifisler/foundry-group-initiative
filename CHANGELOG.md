@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.3
+- fixed an issue where the collapse/expand icons wouldn't scroll if there were a lot of combatants in the tracker - thanks @strongpauly
+- fixed bug where the same combatants weren't properly being grouped
+- if you make changes to a combatant (like hide/visible) in the tracker, the group would collapse. changed this so that it remembers the state of the group between updates.
+- previously when adding an new combatant (for an already grouped actor) to the tracker, you would need to roll initiative for the new combatant and it wouldn't be grouped and initiative would be different. now if you add a new combatant, it'll check for it's group and uses the group's initiative automatically.
+- fix an issue where the group initiative rolling would clash with Mob Attack Tools implementation of group initiative. this should no longer happen.
+
 ## 2.0.2
 
 - fix issue with skipped groups and backwards turn moving
