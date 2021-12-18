@@ -99,8 +99,8 @@ const GroupInitiative = {
             const group = groups[actor.data._id];
             if (group.length <= 1 || initiative) return updates;
 
-            // Get initiative from leader of group.
-            initiative = this.getCombatant(group[0]).initiative;
+            // Get initiative from leader of group.            
+            initiative = this.combatants.get(group[0]).initiative;
 
             updates.push({ _id: id, initiative });
             return updates;
