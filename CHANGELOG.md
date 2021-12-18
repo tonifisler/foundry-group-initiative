@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.4
+- fixed a call to a depreciated function that is no longer availble on v9 - thanks @Zamrod for identifying the issue
+
 ## 2.0.3
 - fixed an issue where the collapse/expand icons wouldn't scroll if there were a lot of combatants in the tracker - thanks @strongpauly
 - fixed bug where the same combatants weren't properly being grouped
