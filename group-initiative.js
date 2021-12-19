@@ -390,3 +390,9 @@ Hooks.on('createCombatant', async (combatant) => {
         });
     }
 });
+
+Hooks.on('deleteCombat', async () => {
+    libWrapper.unregister(_gi_MODULE_NAME, "Combat.prototype.rollAll");
+    libWrapper.unregister(_gi_MODULE_NAME, "Combat.prototype.rollNPC");
+    _gi_rollsWrapped = false;
+})
