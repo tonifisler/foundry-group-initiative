@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.5
+- fixed issue where Roll NPC and Roll All buttons only worked with the first encounter
+
 ## 2.0.4
 - fixed a call to a depreciated function that is no longer availble on v9 - thanks @Zamrod for identifying the issue
 
