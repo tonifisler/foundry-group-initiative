@@ -293,7 +293,7 @@ Hooks.on('renderCombatTracker', async (app, html, data) => {
     const lis = html.find("li");
     const headerCombatantLIs = headerCombatants.map(c => {
         for (let li of lis) {
-            if ($(li).data("combatantId") === c._id) {
+            if ($(li).data("combatantId") === c.id) {
                 return li;
             }
         }        
@@ -310,8 +310,8 @@ Hooks.on('renderCombatTracker', async (app, html, data) => {
 
     // for each list item element initiative group, wrap group in a HTML details element to collapse them
     for (let i = 0; i < initiativeGroups.length; i++) {
-        const opened = (_gi_openedGroups.findIndex((x) => x === headerCombatants[i]._id) > -1) ? 'open' : '';
-        $(initiativeGroups[i]).wrapAll(`<details id="${headerCombatants[i]._id}" ${opened} />`);
+        const opened = (_gi_openedGroups.findIndex((x) => x === headerCombatants[i].id) > -1) ? 'open' : '';
+        $(initiativeGroups[i]).wrapAll(`<details id="${headerCombatants[i].id}" ${opened} />`);
         $(initiativeGroups[i]).css("padding-left", "30px");
 
         // create a summary element for each details element, based on header combatant        
@@ -333,7 +333,7 @@ Hooks.on('renderCombatTracker', async (app, html, data) => {
         }
         
         const data = {
-            Id: headerCombatants[i]._id,
+            Id: headerCombatants[i].id,
             CombatantImage: headerCombatants[i].img,            
             CombatantInitiative: headerCombatants[i].initiative || "",
             CombatantName: combatantName,

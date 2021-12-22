@@ -1,5 +1,8 @@
 # Changelog
 
+# 2.0.6
+- fix grouping issue for v9
+
 ## 2.0.5
 - fixed issue where Roll NPC and Roll All buttons only worked with the first encounter
 
