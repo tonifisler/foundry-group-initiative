@@ -13,6 +13,12 @@ Make one roll for an entire group of identical creatures (the same actor) direct
 ## Skip grouped combatants
 Skip combatants in a group except for the first found in said group.
 
+## Group same actors
+Group same actors into a header group.
+
+## Use already rolled initiative
+When adding a new combatant (to running combat) and there's already initiative for another combatant of the same actor, then use the already rolled initiative.
+
 ![options](examples/options.jpg)
 
 # Combat Tracker
