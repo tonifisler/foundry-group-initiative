@@ -1,5 +1,10 @@
 # Changelog
 
+# 2.0.7
+- put header grouping begin a setting that's disabled by default. this is while I try and sort out the various grouping issues
+- add a setting that specifies whether you want a new combatant (added after combat started) to use another combatant's (of the same actor) initiative
+- fix issue with the detail header arrow overriding other detail header's arrows styling
+
 # 2.0.6
 - fix grouping issue for v9
 
