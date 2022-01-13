@@ -6,6 +6,8 @@ const _gi_SETTING_NAME = 'rollGroupInitiative';
 // Default setting
 let _gi_CONFIG_GROUPINITIATIVE = false;
 let _gi_CONFIG_SKIPGROUPED = false;
+let _gi_CONFIG_GROUPSAME = false;
+let _gi_CONIG_USEROLLEDINIT = false;
 
 let _gi_openedGroups = [];
 let _gi_rollsWrapped = false;
@@ -220,6 +222,8 @@ Hooks.on('renderCombatTrackerConfig', async (ctc, html) => {
     const data = {
         rollGroupInitiative: _gi_CONFIG_GROUPINITIATIVE,
         skipGrouped: _gi_CONFIG_SKIPGROUPED,
+        groupSame: _gi_CONFIG_GROUPSAME,
+        useRolledInit: _gi_CONIG_USEROLLEDINIT,
     };
 
     const newOption = await renderTemplate(
@@ -236,9 +240,13 @@ Hooks.on('renderCombatTrackerConfig', async (ctc, html) => {
 Hooks.on('closeCombatTrackerConfig', async ({ form }) => {
     _gi_CONFIG_GROUPINITIATIVE = form.querySelector('#rollGroupInitiative').checked;
     _gi_CONFIG_SKIPGROUPED = form.querySelector('#skipGrouped').checked;
+    _gi_CONFIG_GROUPSAME = form.querySelector('#groupSame').checked;
+    _gi_CONIG_USEROLLEDINIT = form.querySelector('#useRolledInit').checked;
     // Save the setting when closing the combat tracker setting.
     await game.settings.set(_gi_MODULE_NAME, _gi_SETTING_NAME, _gi_CONFIG_GROUPINITIATIVE);
     await game.settings.set(_gi_MODULE_NAME, "skipGrouped", _gi_CONFIG_SKIPGROUPED);
+    await game.settings.set(_gi_MODULE_NAME, "groupSame", _gi_CONFIG_GROUPSAME);
+    await game.settings.set(_gi_MODULE_NAME, "useRolledInit", _gi_CONIG_USEROLLEDINIT);
 });
 
 /**
@@ -265,7 +273,25 @@ Hooks.once('init', () => {
         type: Boolean,
         scope: 'world',
         config: false,
-    })
+    });
+
+    _gi_CONFIG_GROUPSAME = _gi_initSetting("groupSame", {
+        name: _gi_i18n('COMBAT.GroupSame'),
+        hint: _gi_i18n('COMBAT.GroupSameHint'),
+        default: _gi_CONFIG_GROUPSAME,
+        type: Boolean,
+        scope: 'world',
+        config: false,
+    });
+
+    _gi_CONIG_USEROLLEDINIT = _gi_initSetting("groupSame", {
+        name: _gi_i18n('COMBAT.UseRolledInit'),
+        hint: _gi_i18n('COMBAT.UseRolledInitHint'),
+        default: _gi_CONIG_USEROLLEDINIT,
+        type: Boolean,
+        scope: 'world',
+        config: false,
+    });
 });
 
 Hooks.on('renderCombatTracker', async (app, html, data) => {
@@ -277,94 +303,98 @@ Hooks.on('renderCombatTracker', async (app, html, data) => {
 
     GroupInitiative.overrideRollMethods(combat);
 
-    let combatants = combat.turns;
-    // create initiative groups; array of arrays
-    
-    let groups = GroupInitiative.getGroups(combatants);
-    // if only 1 initiative group, return 
-    if (groups.length < 2) return;
+    // if you want to group the combatants into groups - TODO: NEED TO FIX!!
+    if (_gi_CONFIG_GROUPSAME) {
+        let combatants = combat.turns;
+        // create initiative groups; array of arrays
+        
+        let groups = GroupInitiative.getGroups(combatants);
+        // if only 1 initiative group, return 
+        if (groups.length < 2) return;
 
-    // filter out initiative groups with only a single combatant (no need to collapse)
-    groups = groups.filter(g => g.length > 1);
-    // for each group, use the first combatant as a "header"
-    const headerCombatants = groups.map(g => g[0]);
-    const headerActor = headerCombatants[0]?.actor;
-    // get the list item HTML element corresponding to the header combatants
-    const lis = html.find("li");
-    const headerCombatantLIs = headerCombatants.map(c => {
-        for (let li of lis) {
-            if ($(li).data("combatantId") === c.id) {
-                return li;
-            }
-        }        
-    });
+        // filter out initiative groups with only a single combatant (no need to collapse)
+        groups = groups.filter(g => g.length > 1);
+        // for each group, use the first combatant as a "header"
+        const headerCombatants = groups.map(g => g[0]);
+        const headerActor = headerCombatants[0]?.actor;
+        // get the list item HTML element corresponding to the header combatants
+        const lis = html.find("li");
+        const headerCombatantLIs = headerCombatants.map(c => {
+            for (let li of lis) {
+                if ($(li).data("combatantId") === c.id) {
+                    return li;
+                }
+            }        
+        });
 
-    // create initiative groups of list item elements
-    const initiativeGroups = []
-    for (let i = 0; i < headerCombatantLIs.length; i++) {
-        const current = headerCombatantLIs[i];
-        const currentGroup = [current];
-        $(current).nextAll().splice(0, groups[i].length - 1).forEach(e => currentGroup.push(e));
-        initiativeGroups.push(currentGroup);
-    }
+        // create initiative groups of list item elements
+        const initiativeGroups = []
+        for (let i = 0; i < headerCombatantLIs.length; i++) {
+            const current = headerCombatantLIs[i];
+            const currentGroup = [current];
+            $(current).nextAll().splice(0, groups[i].length - 1).forEach(e => currentGroup.push(e));
+            initiativeGroups.push(currentGroup);
+        }
 
-    // for each list item element initiative group, wrap group in a HTML details element to collapse them
-    for (let i = 0; i < initiativeGroups.length; i++) {
-        const opened = (_gi_openedGroups.findIndex((x) => x === headerCombatants[i].id) > -1) ? 'open' : '';
-        $(initiativeGroups[i]).wrapAll(`<details id="${headerCombatants[i].id}" ${opened} />`);
-        $(initiativeGroups[i]).css("padding-left", "30px");
+        // for each list item element initiative group, wrap group in a HTML details element to collapse them
+        for (let i = 0; i < initiativeGroups.length; i++) {
+            const opened = (_gi_openedGroups.findIndex((x) => x === headerCombatants[i].id) > -1) ? 'open' : '';
+            $(initiativeGroups[i]).wrapAll(`<details class="group-initiative-header" id="${headerCombatants[i].id}" ${opened} />`);
+            $(initiativeGroups[i]).css("padding-left", "30px");
 
-        // create a summary element for each details element, based on header combatant        
-        let shouldReplace = false;
-        let combatantName = headerCombatants[i].name;
-        let showHiddenMask = false;
-        let toolTip = '';
-        if (game.modules.get("combat-utility-belt")?.active) {
-            shouldReplace = GroupInitiative.shouldReplaceName(headerActor);
-            
-            if (shouldReplace) {
-                if (game.user.isGM) {
-                    showHiddenMask = true;
-                    toolTip = GroupInitiative.getReplacementName(headerActor);
-                } else {
-                    combatantName = GroupInitiative.getReplacementName(headerActor);
+            // create a summary element for each details element, based on header combatant        
+            let shouldReplace = false;
+            let combatantName = headerCombatants[i].name;
+            let showHiddenMask = false;
+            let toolTip = '';
+            if (game.modules.get("combat-utility-belt")?.active) {
+                shouldReplace = GroupInitiative.shouldReplaceName(headerActor);
+                
+                if (shouldReplace) {
+                    if (game.user.isGM) {
+                        showHiddenMask = true;
+                        toolTip = GroupInitiative.getReplacementName(headerActor);
+                    } else {
+                        combatantName = GroupInitiative.getReplacementName(headerActor);
+                    }
                 }
             }
-        }
+            
+            const data = {
+                Id: headerCombatants[i].id,
+                CombatantImage: headerCombatants[i].img,            
+                CombatantInitiative: headerCombatants[i].initiative || "",
+                CombatantName: combatantName,
+                ShowHiddenMask: showHiddenMask,
+                ToolTip: toolTip,
+            };
         
-        const data = {
-            Id: headerCombatants[i].id,
-            CombatantImage: headerCombatants[i].img,            
-            CombatantInitiative: headerCombatants[i].initiative || "",
-            CombatantName: combatantName,
-            ShowHiddenMask: showHiddenMask,
-            ToolTip: toolTip,
-        };
+            const currentGroup = $(headerCombatantLIs[i]).prop("parentElement");
+            const groupHeader = await renderTemplate(
+                'modules/group-initiative/templates/group-collapse.html',
+                data
+            );
+            $(groupHeader).prependTo(currentGroup)
+        }
+
+        // if current combatant is in a collapsed group, open the group
+        const activeCombatantLI = html.find("li.active");
+        const details = $(activeCombatantLI).prop("parentElement");
+        if ($(details).prop("nodeName") === "DETAILS") {
+            if (_gi_CONFIG_SKIPGROUPED && $(activeCombatantLI).prev().prop("nodeName") === "LI") {
+                if (game.combat.current.turn < game.combat.previous.turn) {
+                    return game.combat.previousTurn();
+                } else {
+                    return game.combat.nextTurn();
+                }
+            } 
+            $(details).prop("open", true);
+        }
+
+        const tracker = html.find("#combat-tracker");
+        GroupInitiative.eventListeners(tracker);
+    }
     
-        const currentGroup = $(headerCombatantLIs[i]).prop("parentElement");
-        const groupHeader = await renderTemplate(
-            'modules/group-initiative/templates/group-collapse.html',
-            data
-        );
-        $(groupHeader).prependTo(currentGroup)
-    }
-
-    // if current combatant is in a collapsed group, open the group
-    const activeCombatantLI = html.find("li.active");
-    const details = $(activeCombatantLI).prop("parentElement");
-    if ($(details).prop("nodeName") === "DETAILS") {
-        if (_gi_CONFIG_SKIPGROUPED && $(activeCombatantLI).prev().prop("nodeName") === "LI") {
-            if (game.combat.current.turn < game.combat.previous.turn) {
-                return game.combat.previousTurn();
-            } else {
-                return game.combat.nextTurn();
-            }
-        } 
-        $(details).prop("open", true);
-    }
-
-    const tracker = html.find("#combat-tracker");
-    GroupInitiative.eventListeners(tracker);
 });
 
 Hooks.on('createCombatant', async (combatant) => {
@@ -383,12 +413,14 @@ Hooks.on('createCombatant', async (combatant) => {
     const headerCombatants = groups.map(g => g[0]);
 
     // make sure if the header combatant has initiative, that everyone in the group has the same
-    const combatantHeader = headerCombatants.find((x) => x.actor?.id === combatant?.actor?.id);
-    if (combatantHeader?.initiative && !combatant?.initiative) {
-        await combatant.update({
-            initiative: combatantHeader?.initiative
-        });
-    }
+    if (_gi_CONIG_USEROLLEDINIT) {
+        const combatantHeader = headerCombatants.find((x) => x.actor?.id === combatant?.actor?.id);
+        if (combatantHeader?.initiative && !combatant?.initiative) {
+            await combatant.update({
+                initiative: combatantHeader?.initiative
+            });
+        }
+    }    
 });
 
 Hooks.on('deleteCombat', async () => {

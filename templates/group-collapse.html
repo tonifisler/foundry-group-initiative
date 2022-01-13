@@ -1,21 +1,21 @@
 <style>
-   details>summary { 
+    details.group-initiative-header>summary { 
         list-style: none;
         position: relative;
     }
 
-    summary::-webkit-details-marker {
+    details.group-initiative-header>summary::-webkit-details-marker {
         display: none
     }
 
-    summary::after {
+    details.group-initiative-header>summary::after {
         content: ' ►';
         position: absolute;
         right: 47px;
         margin-top: -34px;
     }
 
-    details[open] summary:after {
+    details.group-initiative-header[open] summary:after {
         content: ' ▼';
         position: absolute;
         right: 47px;
