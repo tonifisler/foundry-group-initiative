@@ -3,5 +3,9 @@
   "COMBAT.RollGroupInitiative": "Roll group initiative",
   "COMBAT.RollGroupInitiativeHint": "Make one roll for an entire group of identical creatures (the same actor) directly from the Combat Tracker \"Roll NPCs\" or \"Roll All\" buttons.",
   "COMBAT.SkipGrouped": "Skip grouped combatants",
-  "COMBAT.SkipGroupedHint": "Skip combatants except for the first in a group."
+  "COMBAT.SkipGroupedHint": "Skip combatants except for the first in a group.",
+  "COMBAT.GroupSame": "Group same actors (EXPERIMENTAL - this has known bugs)",
+  "COMBAT.GroupSameHint": "Group same actors into a header group.",
+  "COMBAT.UseRolledInit": "Use already rolled initiative",
+  "COMBAT.UseRolledInitHint": "When adding a new combatant and there's already initiative for another combatant of the same actor, then use the already rolled initiative."
 }
