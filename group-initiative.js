@@ -284,7 +284,7 @@ Hooks.once('init', () => {
         config: false,
     });
 
-    _gi_CONIG_USEROLLEDINIT = _gi_initSetting("groupSame", {
+    _gi_CONIG_USEROLLEDINIT = _gi_initSetting("useRolledInit", {
         name: _gi_i18n('COMBAT.UseRolledInit'),
         hint: _gi_i18n('COMBAT.UseRolledInitHint'),
         default: _gi_CONIG_USEROLLEDINIT,
