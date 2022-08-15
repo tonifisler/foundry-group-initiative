@@ -78,13 +78,24 @@ const GroupInitiative = {
         console.log('group-initiative | Rolling initiative!');
 
         // Split the combatants in groups based on actor id.
-        const groups = creatures.reduce(
-            (g, combatant) => ({
-                ...g,
-                [combatant.actor.id]: (g[combatant.actor.id] || []).concat(combatant.data._id),
-            }),
-            {}
-        );
+        let groups;
+        if (game.version.split('.')[0] === '10') {
+            groups = creatures.reduce(
+                (g, combatant) => ({
+                    ...g,
+                    [combatant.actorId]: (g[combatant.actorId] || []).concat(combatant.id),
+                }),
+                {}
+            );
+        } else {
+            groups = creatures.reduce(
+                (g, combatant) => ({
+                    ...g,
+                    [combatant.actor.id]: (g[combatant.actor.id] || []).concat(combatant.data._id),
+                }),
+                {}
+            );
+        }        
 
         // Get first Combatant id for each group
         const ids = Object.keys(groups).map(key => groups[key][0]);
@@ -98,7 +109,13 @@ const GroupInitiative = {
 
         // Prepare the others in the group.
         const updates = creatures.reduce((updates, { id, initiative, actor }) => {
-            const group = groups[actor.data._id];
+            let group;
+            if (game.version.split('.')[0] === '10') {
+                group = groups[actor.id];
+            } else {
+                group = groups[actor.data._id];
+            }
+            
             if (group.length <= 1 || initiative) return updates;
 
             // Get initiative from leader of group.            
@@ -149,7 +166,7 @@ const GroupInitiative = {
         groups[groupsIndex] = [combatants[0]];
         for (let i = 1; i < combatants.length; i++) {
             // check if there is a group with this actor as id
-            let useGroupIndex = groups.findIndex((x) => x[0]?.actor?.id === combatants[i].actor.id);
+            let useGroupIndex = (game.version.split('.')[0]) ? groups.findIndex((x) => x[0]?.actorId === combatants[i].actorId) : groups.findIndex((x) => x[0]?.actor.id === combatants[i].actor.id);
             if (useGroupIndex === -1) {
                 groupsIndex++;
                 groups[groupsIndex] = [];
@@ -302,6 +319,40 @@ Hooks.on('renderCombatTracker', async (app, html, data) => {
     if (!combat) return;
 
     GroupInitiative.overrideRollMethods(combat);
+
+    if (_gi_CONFIG_SKIPGROUPED && !_gi_CONFIG_GROUPSAME) {
+        const activeCombatantId = html.find("li.active")?.attr("data-combatant-id");
+        let groups = GroupInitiative.getGroups(combat.turns).filter((x) => x.length >= 2);
+        
+        let inGroup = false;
+        for (let groupItem of groups)
+        {
+            if (inGroup) {
+                break;
+            }
+
+            const parent = groupItem[0].id;
+            for (let combatant of groupItem)
+            {
+                if (combatant.id === activeCombatantId && activeCombatantId !== parent)
+                {
+                    inGroup = true;
+                    break;
+                }
+            }
+        }
+
+        if (inGroup)
+        {
+            if (game.combat.current.round < game.combat.previous.round) {
+                return game.combat.previousTurn();
+            } else if (game.combat.current.turn < game.combat.previous.turn) {
+                return game.combat.previousTurn();
+            } else {
+                return game.combat.nextTurn();
+            }
+        }
+    }
 
     // if you want to group the combatants into groups - TODO: NEED TO FIX!!
     if (_gi_CONFIG_GROUPSAME) {
