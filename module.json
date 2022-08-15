@@ -1,17 +1,20 @@
 {
-  "name": "group-initiative",
+  "id": "group-initiative",
   "title": "Group Initiative",
   "description": "Roll group initiative from the Combat tracker.",
-  "author": "VTT Lair, thorni",
   "authors": [
     {
       "name": "VTT Lair",
       "url": "https://github.com/vtt-lair"
     }
   ],
-  "version": "2.0.8",
+  "version": "2.1.0",
   "minimumCoreVersion": "0.8.6",
-  "compatibleCoreVersion": "9",
+  "compatibleCoreVersion": "10",
+  "compatibility": {
+    "minimum": "0.8.6",
+    "verified": "10"
+  },
   "scripts": [],
   "esmodules": ["group-initiative.js"],
   "dependencies": [
@@ -19,11 +22,16 @@
         "name": "lib-wrapper", "type": "module"
     }
   ],
-  "url": "https://github.com/vtt-lair/foundry-group-initiative",
-  "manifest": "https://github.com/vtt-lair/foundry-group-initiative/releases/latest/download/module.json",
-  "download": "https://github.com/vtt-lair/foundry-group-initiative/releases/download/2.0.8/group-initiative-v2.0.8.zip",
-  "changelog": "https://github.com/tonifisler/foundry-group-initiative/blob/master/CHANGELOG.md",
-  "readme": "https://github.com/tonifisler/foundry-group-initiative/blob/master/README.md",
+  "relationships": {
+    "requires": [{
+      "id": "lib-wrapper",
+      "type": "module",
+      "manifest": "https://github.com/ruipin/fvtt-lib-wrapper/releases/download/v1.12.7.1/module.json",
+      "compatibility": {
+        "verified": "1.12.7.1"
+      }
+    }]
+  },
   "languages": [
     {
       "lang": "en",
@@ -40,5 +48,10 @@
       "name": "Korean",
       "path": "lang/ko.json"
     }
-  ]
+  ],
+  "url": "https://github.com/vtt-lair/foundry-group-initiative",
+  "manifest": "https://github.com/vtt-lair/foundry-group-initiative/releases/latest/download/module.json",
+  "download": "https://github.com/vtt-lair/foundry-group-initiative/releases/download/2.0.8/group-initiative-v2.0.8.zip",
+  "changelog": "https://github.com/tonifisler/foundry-group-initiative/blob/master/CHANGELOG.md",
+  "readme": "https://github.com/tonifisler/foundry-group-initiative/blob/master/README.md"  
 }
