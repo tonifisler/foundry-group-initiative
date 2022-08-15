@@ -1,5 +1,9 @@
 # Changelog
 
+# 2.1.0
+- version 10 compatibility
+- fix skip grouped combatants
+
 # 2.0.8
 - fix issue with "Use already rolled initiative" setting on combat tracker settings
 
