@@ -248,7 +248,7 @@ Hooks.on('renderCombatTrackerConfig', async (ctc, html) => {
         data
     );
 
-    html.css({ height: 'auto' }).find('button[name=submit]').before(newOption);
+    html.css({ height: 'auto' }).find('button[type="submit"]').before(newOption);
 });
 
 /**
